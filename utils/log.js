@@ -19,13 +19,17 @@ module.exports = {
 			if (!fs.existsSync(dir)) {
 				fs.mkdirSync(dir);
 			}
-			fs.appendFile(`${dir}${name}.txt`, `${timeStr} ${message}\n`, (err) => {
-				if (err) throw err;
+			fs.appendFile(
+				`${dir}${name}.txt`,
+				`${timeStr} ${message}\n`,
+				(err) => {
+					if (err) throw err;
 
-				// Success
-			});
+					// Success
+				}
+			);
 		}
 
 		console.debug(timeStr, message);
-	}
-}
+	},
+};

@@ -1,50 +1,41 @@
 require("dotenv").config();
-require("./commandDeployer"); // Deploy commands
-const fs = require("node:fs");
-const path = require("node:path");
-const { Client, GatewayIntentBits, Collection } = require("discord.js");
-const { log } = require("./util/log");
+const { log } = require("./utils/log");
+const Eris = require("eris");
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildVoiceStates
-    ]
-});
-client.commands = new Collection();
-
-client.once("ready", () => {
-    log(`Bot ready (${client.user.tag})`);
-    client.user.setActivity("0 outros!");
-
-    const commandsPath = path.join(__dirname, "commands");
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
-    for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, file);
-        const command = require(filePath);
-        client.commands.set(command.data.name, command);
-    }
+const client = new Eris.Client(process.env.TOKEN, {
+	intents: [],
 });
 
-client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
+client.on("connect", (id) => log(`Connected! (${id})`));
 
-    const command = client.commands.get(interaction.commandName);
+client.on("ready", async () => {
+	log("Loading application commands...");
 
-    if (!command) return;
+	await client.createGuildCommand("1022451997582045184", {
+		name: "outro",
+		type: Eris.Constants.ApplicationCommandTypes.CHAT_INPUT,
+		description: "Plays outro!",
+	});
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({
-            content: `There was an error while executing this command!\`\`\`
-                ${error}
-            \`\`\``,
-            ephemeral: true
-        });
-    }
+	log("Ready!");
 });
 
-client.login(process.env.TOKEN);
+client.on("error", (err) => {
+	log(err);
+});
+
+client.on("interactionCreate", (interaction) => {
+	if (interaction instanceof Eris.CommandInteraction) {
+		switch (interaction.data.name) {
+			case "outro":
+				return require("./commands/outro").run(interaction);
+			default: {
+				return interaction.createMessage(
+					"Unhandled command! Please report."
+				);
+			}
+		}
+	}
+});
+
+client.connect();
