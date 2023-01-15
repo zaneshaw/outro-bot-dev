@@ -25,8 +25,12 @@ class ActiveGuild {
 	setState(state) {
 		if (this.state != state) {
 			// State has changed
+
+			// Clear previous voice disconnect timeout (as bot is no longer inactive)
+			clearTimeout(this.dcTimeout);
+
 			if (state == ActiveGuild.GuildState.PLAYING) {
-				// New state is playing
+				// New state is 'playing'
 				setTimeout(() => {
 					// Finished playing audio
 					log(`${this.guildID}: Outro finished`);
@@ -34,8 +38,7 @@ class ActiveGuild {
 					this.setState(ActiveGuild.GuildState.IDLE);
 				}, fakeAudioLength);
 			} else if (state == ActiveGuild.GuildState.IDLE) {
-				// New state is idle
-				clearTimeout(this.dcTimeout);
+				// New state is 'idle'
 				this.dcTimeout = setTimeout(() => {
 					// Auto-disconnect from idle timeout
 					log(
