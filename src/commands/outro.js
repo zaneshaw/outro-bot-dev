@@ -76,7 +76,13 @@ module.exports = {
 		}
 
 		// Acknowledge the interaction
-		await interaction.acknowledge();
+		await interaction.acknowledge(64); // 64 = ephemeral
+		if (interaction.member.voiceState.channelID == null) {
+			await interaction.createFollowup(
+				"You must be in a voice channel to play an outro!"
+			); // useless 'await'?
+			return;
+		}
 
 		// Outro is not playing in the current guild
 		if (guild.state != ActiveGuild.GuildState.PLAYING) {
@@ -117,5 +123,4 @@ module.exports = {
 			await interaction.createFollowup("Outro is already playing!");
 		}
 	},
-	activeGuilds,
 };
