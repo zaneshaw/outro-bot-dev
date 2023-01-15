@@ -14,8 +14,9 @@ class ActiveGuild {
 	};
 	dcTimeout;
 
-	constructor(guildID, state = ActiveGuild.GuildState.NONE) {
+	constructor(guildID, channelID, state = ActiveGuild.GuildState.NONE) {
 		this.guildID = guildID;
+		this.channelID = channelID;
 		this.state = state;
 
 		log(this);
@@ -36,11 +37,13 @@ class ActiveGuild {
 				// New state is idle
 				clearTimeout(this.dcTimeout);
 				this.dcTimeout = setTimeout(() => {
+					// Auto-disconnect from idle timeout
 					log(
 						`${this.guildID}: Auto-disconnected from voice channel`
 					);
 
 					this.setState(ActiveGuild.GuildState.NONE); // Debug line
+					leaveVoiceChannel(this.channelID);
 					activeGuilds.filter(
 						(i) => i !== activeGuilds.indexOf(this)
 					);
@@ -78,10 +81,9 @@ module.exports = {
 		if (guild.state != ActiveGuild.GuildState.PLAYING) {
 			// Play outro
 			await interaction.createFollowup("Playing outro!");
+			guild.channelID = interaction.member.voiceState.channelID;
 			guild.setState(ActiveGuild.GuildState.PLAYING);
-
-			const activeChannelId = interaction.member.voiceState.channelID;
-			await joinVoiceChannel(activeChannelId);
+			await joinVoiceChannel(guild.channelID);
 		} else if (guild.state == ActiveGuild.GuildState.PLAYING) {
 			// Outro is already playing
 			await interaction.createFollowup("Outro is already playing!");
