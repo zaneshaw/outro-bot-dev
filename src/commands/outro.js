@@ -1,6 +1,6 @@
 const path = require("node:path");
 const { log } = require("../utils/log");
-const { joinVoiceChannel, leaveVoiceChannel } = require("../core");
+const core = require("../core");
 const Eris = require("eris");
 
 const kickMemberDelay = 15000;
@@ -39,7 +39,7 @@ class ActiveGuild {
 					);
 
 					this.setState(ActiveGuild.GuildState.NONE); // Debug line
-					leaveVoiceChannel(this.channelID);
+					core.leaveVoiceChannel(this.channelID);
 					activeGuilds.filter(
 						(i) => i !== activeGuilds.indexOf(this)
 					);
@@ -49,6 +49,11 @@ class ActiveGuild {
 
 		// Apply new state
 		this.state = state;
+		core.updateOutroCount(
+			activeGuilds.filter(
+				(guild) => guild.state === ActiveGuild.GuildState.PLAYING
+			).length
+		);
 
 		log(`${this.guildID}: ${this.state}`);
 	}
@@ -77,7 +82,7 @@ module.exports = {
 		if (guild.state != ActiveGuild.GuildState.PLAYING) {
 			// Play outro
 			guild.channelID = interaction.member.voiceState.channelID;
-			const connection = await joinVoiceChannel(guild.channelID);
+			const connection = await core.joinVoiceChannel(guild.channelID);
 
 			connection.on("start", async () => {
 				guild.setState(ActiveGuild.GuildState.PLAYING);
@@ -112,4 +117,5 @@ module.exports = {
 			await interaction.createFollowup("Outro is already playing!");
 		}
 	},
+	activeGuilds,
 };

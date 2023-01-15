@@ -8,10 +8,16 @@ const client = new Eris.Client(process.env.TOKEN, {
 		Eris.Constants.Intents.guildVoiceStates,
 	],
 });
+let outroCount = 0;
 
 client.on("connect", (id) => log(`Connected! (${id})`));
 
 client.on("ready", async () => {
+	setInterval(() => {
+		const str = `${outroCount} outro${outroCount != 1 ? "s" : ""}`;
+		client.editStatus({ name: str });
+	}, 4000);
+
 	log("Loading application commands...");
 
 	await client.createGuildCommand("1022451997582045184", {
@@ -47,6 +53,9 @@ module.exports = {
 	},
 	leaveVoiceChannel(channelID) {
 		return client.leaveVoiceChannel(channelID);
+	},
+	updateOutroCount(amount) {
+		outroCount = amount;
 	},
 };
 
