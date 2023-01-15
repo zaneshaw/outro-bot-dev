@@ -1,8 +1,9 @@
 const fs = require("node:fs");
+const stringify = require("json-stringify-safe");
 
 module.exports = {
 	log(message, options = { time: true, track: true }) {
-		const { time, track } = options;
+		const { time, track: serialise } = options;
 		const date = new Date();
 		const splitDate = date.toLocaleString().split(", ");
 
@@ -12,7 +13,7 @@ module.exports = {
 			timeStr = `[${str}]`;
 		}
 
-		if (track) {
+		if (serialise) {
 			const name = splitDate[0].replace(/\//g, "-");
 			const dir = "logs/";
 
@@ -21,7 +22,7 @@ module.exports = {
 			}
 			fs.appendFile(
 				`${dir}${name}.txt`,
-				`${timeStr} ${message}\n`,
+				`${timeStr} ${stringify(message)}\n`,
 				(err) => {
 					if (err) throw err;
 

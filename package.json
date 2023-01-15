@@ -3,6 +3,7 @@
 	"version": "0.0.1",
 	"dependencies": {
 		"dotenv": "^16.0.2",
-		"eris": "^0.17.1"
+		"eris": "^0.17.1",
+		"json-stringify-safe": "^5.0.1"
 	}
 }
