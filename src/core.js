@@ -3,7 +3,10 @@ const { log } = require("./utils/log");
 const Eris = require("eris");
 
 const client = new Eris.Client(process.env.TOKEN, {
-	intents: [],
+	intents: [
+		Eris.Constants.Intents.guilds,
+		Eris.Constants.Intents.guildVoiceStates,
+	],
 });
 
 client.on("connect", (id) => log(`Connected! (${id})`));
@@ -37,5 +40,14 @@ client.on("interactionCreate", (interaction) => {
 		}
 	}
 });
+
+module.exports = {
+	async joinVoiceChannel(channelID) {
+		return await client.joinVoiceChannel(channelID);
+	},
+	leaveVoiceChannel(channelID) {
+		return client.leaveVoiceChannel(channelID);
+	},
+};
 
 client.connect();
