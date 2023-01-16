@@ -4,7 +4,7 @@ const core = require("../core");
 const Eris = require("eris");
 
 const kickMemberDelay = 15000;
-const dcTimeoutDelay = 10000; // 30000
+const dcTimeoutDelay = 30000;
 const activeGuilds = [];
 
 class ActiveGuild {

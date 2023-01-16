@@ -20,7 +20,7 @@ client.on("ready", async () => {
 
 	log("Loading application commands...");
 
-	await client.createGuildCommand("1022451997582045184", {
+	await client.createCommand({
 		name: "outro",
 		type: Eris.Constants.ApplicationCommandTypes.CHAT_INPUT,
 		description: "Plays outro!",
