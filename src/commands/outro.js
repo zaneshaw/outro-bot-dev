@@ -9,18 +9,17 @@ const activeGuilds = [];
 
 class ActiveGuild {
 	static GuildState = {
-		NONE: "NONE",
 		IDLE: "IDLE",
 		PLAYING: "PLAYING",
 	};
 	dcTimeout;
 
-	constructor(guildID, channelID, state = ActiveGuild.GuildState.NONE) {
+	constructor(guildID, channelID, state = null) {
 		this.guildID = guildID;
 		this.channelID = channelID;
 		this.state = state;
 
-		log(this);
+		log("Guild is now active", { log: false, subDir: this.guildID });
 	}
 
 	setState(state) {
@@ -35,27 +34,33 @@ class ActiveGuild {
 				this.dcTimeout = setTimeout(() => {
 					// Auto-disconnect from idle timeout
 					log(
-						`${this.guildID}: Auto-disconnected from voice channel`
+						"Auto-disconnected from voice channel (Guild is now inactive)",
+						{
+							log: false,
+							subDir: this.guildID,
+						}
 					);
 
-					this.setState(ActiveGuild.GuildState.NONE); // Debug line
 					core.leaveVoiceChannel(this.channelID);
 					activeGuilds.filter(
 						(i) => i !== activeGuilds.indexOf(this)
 					);
 				}, dcTimeoutDelay);
 			}
+
+			// Apply new state
+			this.state = state;
+			core.updateOutroCount(
+				activeGuilds.filter(
+					(guild) => guild.state === ActiveGuild.GuildState.PLAYING
+				).length
+			);
+
+			log(`State changed: ${this.state}`, {
+				log: false,
+				subDir: this.guildID,
+			});
 		}
-
-		// Apply new state
-		this.state = state;
-		core.updateOutroCount(
-			activeGuilds.filter(
-				(guild) => guild.state === ActiveGuild.GuildState.PLAYING
-			).length
-		);
-
-		log(`${this.guildID}: ${this.state}`);
 	}
 }
 
@@ -97,9 +102,9 @@ module.exports = {
 
 			connection.on("end", () => {
 				// Finished playing audio
-				log(`${guild.guildID}: Outro finished`);
-
 				guild.setState(ActiveGuild.GuildState.IDLE);
+
+				log("Audio finished", { log: false, subDir: guild.guildID });
 			});
 
 			if (connection.playing) connection.stopPlaying(); // Cancel current audio
@@ -115,12 +120,20 @@ module.exports = {
 				) {
 					// Kick member if music is still playing
 					interaction.member.edit({ channelID: null });
-					log("Kicking member!");
+					log(`Kicked member (${interaction.member.id})`, {
+						log: false,
+						subDir: guild.guildID,
+					});
 				}
 			}, kickMemberDelay);
 		} else if (guild.state == ActiveGuild.GuildState.PLAYING) {
 			// Outro is already playing
 			await interaction.createFollowup("Outro is already playing!");
 		}
+
+		log(`Playing outro (${interaction.member.id})`, {
+			log: false,
+			subDir: guild.guildID,
+		});
 	},
 };
